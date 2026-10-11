@@ -42,7 +42,7 @@ pub fn ShiftOrType(comptime MaskT: type, comptime tr: ?root.TransformFunc) type 
 
         pub const trfn: root.TransformFunc = tr orelse to_ident;
 
-        mask: [256]Mask = [_]Mask{0} ** 256,
+        mask: [256]Mask = @splat(0),
         final: Mask = undefined,
         patlen: usize = undefined,
 
@@ -98,6 +98,14 @@ pub fn ShiftOrType(comptime MaskT: type, comptime tr: ?root.TransformFunc) type 
     };
 }
 
+pub fn mulstr(comptime x: anytype, comptime c: comptime_int) [x.len * c]u8 {
+    var res: [x.len * c]u8 = undefined;
+    for (0..c) |i| {
+        @memcpy(res[i * x.len .. (i + 1) * x.len], x);
+    }
+    return res;
+}
+
 test "search" {
     var s = "wkkcjehasdfwecwee";
     var r = ShiftOr.search("asdf", s);
@@ -121,11 +129,10 @@ test "seach32 caseless" {
 
 test "search128" {
     const SO = ShiftOrType(u128, null);
-    var s = ("1234567890" ** 12) ++ "asdf";
+    const s = mulstr("1234567890", 12) ++ "asdf";
     var r = SO.search("asdf", s);
     try tt.expectEqual(@as(usize, 120), r);
 
-    s = ("1234567890" ** 12) ++ "asdf";
     r = SO.search("asdq", s);
     try tt.expectEqual(@as(usize, s.len), r);
 }

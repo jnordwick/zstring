@@ -62,14 +62,26 @@ pub fn BoyerMooreHorspoolType(comptime tr: ?root.TransformFunc) type {
 
 const tt = std.testing;
 
+fn mulstr(comptime x: anytype, comptime c: comptime_int) [x.len * c]u8 {
+    var res: [x.len * c]u8 = undefined;
+    for (0..c) |i| {
+        @memcpy(res[i * x.len .. (i + 1) * x.len], x);
+    }
+    return res;
+}
+
 test "bmh search" {
-    const s = ("1234567890" ** 12) ++ "asdf";
+    const s = comptime b: {
+        break :b mulstr("1234567890", 12) ++ "asdf";
+    };
     const r = BoyerMooreHorspool.search("asdf", s);
     try tt.expectEqual(@as(usize, 120), r);
 }
 
 test "bmh no case search" {
-    const s = ("1234567890" ** 12) ++ "ASdf";
+    const s = comptime b: {
+        break :b mulstr("1234567890", 12) ++ "ASdf";
+    };
     const r = BoyerMooreHorspoolNoCase.search("aSDf", s);
     try tt.expectEqual(@as(usize, 120), r);
 }

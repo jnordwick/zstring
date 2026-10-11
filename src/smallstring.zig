@@ -171,7 +171,7 @@ test "append_char boundaries" {
     s.append_char('x', SmallString.buf_size);
     try std.testing.expectEqual(SmallString.buf_size, s.len);
     try std.testing.expectEqualStrings(
-        &[_]u8{'x'} ** SmallString.buf_size,
+        &@as([SmallString.buf_size]u8, @splat('x')),
         s.const_slice(),
     );
 
